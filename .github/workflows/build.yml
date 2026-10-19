@@ -15,7 +15,14 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: ZIP entpacken
-        run: unzip -q SpookyCraftCore.zip
+        run: |
+          mkdir tmp_unzip
+          unzip -q -o SpookyCraftCore.zip -d tmp_unzip -x ".github/*"
+          if [ -d tmp_unzip/SpookyCraftCore ]; then
+            mv tmp_unzip/SpookyCraftCore SpookyCraftCore
+          else
+            mv tmp_unzip SpookyCraftCore
+          fi
 
       - name: Shadow-Plugin auf passende Version setzen
         working-directory: SpookyCraftCore
