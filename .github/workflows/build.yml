@@ -10,29 +10,53 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
+
       - name: ZIP entpacken
         run: unzip -q SpookyCraftCore.zip
+
       - name: Shadow-Plugin auf passende Version setzen
-        run: sed -i "s/version '9.6.1'/version '8.3.5'/" SpookyCraftCore/build.gradle
+        working-directory: SpookyCraftCore
+        run: |
+          sed -i -E \
+            "s/version ['\"]9\.6\.1['\"]/version '8.3.5'/" \
+            build.gradle
+          echo "Verwendete Shadow-Plugin-Konfiguration:"
+          grep -n "8.3.5" build.gradle
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.10.2'
+
       - name: Build
         working-directory: SpookyCraftCore
         run: gradle shadowJar --no-daemon
+
+      - name: Gebaute Dateien anzeigen
+        run: ls -lah SpookyCraftCore/build/libs/
+
+      - name: JAR-Datei prüfen
+        run: test -f SpookyCraftCore/build/libs/SpookyCraftCore.jar
+
       - uses: actions/upload-artifact@v4
         with:
           name: SpookyCraftCore
           path: SpookyCraftCore/build/libs/SpookyCraftCore.jar
-      - name: Release mit jar veröffentlichen
+          if-no-files-found: error
+
+      - name: Release mit JAR veröffentlichen
         uses: softprops/action-gh-release@v2
         with:
           tag_name: latest
           name: SpookyCraftCore (neuester Build)
           files: SpookyCraftCore/build/libs/SpookyCraftCore.jar
+          fail_on_unmatched_files: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
