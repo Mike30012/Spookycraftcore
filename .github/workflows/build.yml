@@ -16,8 +16,13 @@ jobs:
 
       - name: ZIP entpacken
         run: |
+          echo "Dateien im Repository:"
+          ls -la
+          ZIP=$(find . -maxdepth 3 -iname "*.zip" -not -path "./tmp_unzip/*" | head -n 1)
+          echo "Verwende: $ZIP"
+          test -n "$ZIP"
           mkdir tmp_unzip
-          unzip -q -o SpookyCraftCore.zip -d tmp_unzip -x ".github/*"
+          unzip -q -o "$ZIP" -d tmp_unzip -x ".github/*"
           if [ -d tmp_unzip/SpookyCraftCore ]; then
             mv tmp_unzip/SpookyCraftCore SpookyCraftCore
           else
